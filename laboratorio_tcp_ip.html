@@ -1,0 +1,4229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Laboratório TCP/IP — Simulador</title>
+
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+
+    font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background: #06131f;
+    color: #f4f8fc;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+
+/* =========================================================
+   CORES
+========================================================= */
+
+:root {
+
+    --bg: #06131f;
+    --panel: #0b1d2c;
+    --panel2: #10283b;
+    --panel3: #142f45;
+
+    --border: #23445e;
+
+    --text: #f4f8fc;
+    --muted: #8eabc2;
+
+    --blue: #16a8f0;
+    --blue-dark: #086b9f;
+
+    --orange: #ff8a3d;
+
+    --green: #28d17c;
+
+    --red: #ff4d67;
+
+    --yellow: #ffd166;
+
+}
+
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+.topbar {
+
+    height: 112px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(260px, 1fr)
+        auto
+        auto;
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding:
+        14px 28px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #071725,
+            #091b2b
+        );
+
+    border-bottom:
+        1px solid var(--border);
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+}
+
+
+.logo h1 {
+
+    margin: 0;
+
+    font-size: 27px;
+
+    letter-spacing: -0.5px;
+}
+
+.logo span {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   BOTÕES SUPERIORES
+========================================================= */
+
+.top-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+button {
+
+    border: 1px solid #2c506c;
+
+    background: #14324a;
+
+    color: white;
+
+    border-radius: 10px;
+
+    padding: 13px 19px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        0.2s ease;
+
+    min-height: 48px;
+}
+
+button:hover {
+
+    transform: translateY(-1px);
+
+    background: #1a405c;
+
+    border-color: #4c7694;
+}
+
+button:active {
+
+    transform: translateY(1px);
+}
+
+button.primary {
+
+    background:
+        linear-gradient(
+            135deg,
+            #0797df,
+            #0875b0
+        );
+
+    border-color: #21b4f5;
+}
+
+button.danger {
+
+    background:
+        linear-gradient(
+            135deg,
+            #9e2942,
+            #762034
+        );
+
+    border-color: #e34b68;
+}
+
+button.armed {
+
+    animation:
+        pulseLoss 1s infinite;
+
+    background:
+        #d22645 !important;
+
+    border-color:
+        #ff7186 !important;
+}
+
+@keyframes pulseLoss {
+
+    50% {
+        box-shadow:
+            0 0 0 6px
+            rgba(255, 77, 103, .12);
+    }
+}
+
+
+/* =========================================================
+   SELETOR TCP / UDP
+========================================================= */
+
+.protocol-selector {
+
+    display: flex;
+
+    gap: 8px;
+}
+
+.protocol-selector button {
+
+    min-width: 120px;
+}
+
+.tcp.active-tcp {
+
+    background:
+        #0c557e;
+
+    border-color:
+        #16a8f0;
+
+    color:
+        #72d2ff;
+}
+
+.udp.active-udp {
+
+    background:
+        #7a431f;
+
+    border-color:
+        #ff8a3d;
+
+    color:
+        #ffc09a;
+}
+
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+========================================================= */
+
+.main {
+
+    display: grid;
+
+    grid-template-columns:
+        285px
+        minmax(550px, 1fr)
+        350px;
+
+    gap: 14px;
+
+    padding: 14px;
+
+    max-width: 1800px;
+
+    margin: auto;
+}
+
+
+/* =========================================================
+   PAINÉIS
+========================================================= */
+
+.panel {
+
+    background:
+        linear-gradient(
+            180deg,
+            #0c2132,
+            #091a29
+        );
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0,0,0,.15);
+}
+
+
+.panel-title {
+
+    height: 56px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 18px;
+
+    background:
+        #112c42;
+
+    border-bottom:
+        1px solid var(--border);
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   COLUNA ESQUERDA
+========================================================= */
+
+.left-column {
+
+    height:
+        calc(100vh - 140px);
+
+    position:
+        sticky;
+
+    top:
+        126px;
+}
+
+.control-scroll {
+
+    height:
+        calc(100% - 56px);
+
+    overflow-y: auto;
+
+    padding: 14px;
+}
+
+.control-group {
+
+    margin-bottom: 24px;
+}
+
+.control-title {
+
+    color: #88a8c1;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.2px;
+
+    font-size: 13px;
+
+    margin-bottom: 9px;
+}
+
+.big-button {
+
+    width: 100%;
+
+    margin-bottom: 9px;
+
+    min-height: 62px;
+
+    font-size: 16px;
+}
+
+.info-box {
+
+    background:
+        #0b2031;
+
+    border:
+        1px solid #23445e;
+
+    border-radius: 10px;
+
+    padding: 13px;
+
+    color: #b8cede;
+
+    line-height: 1.5;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   CENTRO
+========================================================= */
+
+.center-column {
+
+    min-width: 0;
+}
+
+.application-message {
+
+    min-height: 82px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 14px 18px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    background:
+        #081a28;
+}
+
+.app-icon {
+
+    width: 50px;
+
+    height: 50px;
+
+    border-radius: 12px;
+
+    background: #112f46;
+
+    border: 1px solid #315670;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 25px;
+
+    flex-shrink: 0;
+}
+
+.app-label {
+
+    color: #7095b1;
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.2px;
+}
+
+.app-message-text {
+
+    margin-top: 3px;
+
+    color: #32c3ff;
+
+    font-size: 20px;
+
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   QUADRO DA REDE
+========================================================= */
+
+.network-panel {
+
+    overflow: hidden;
+}
+
+.network {
+
+    position: relative;
+
+    height: 350px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(20,82,119,.18),
+            transparent 60%
+        ),
+        #061823;
+
+    overflow: hidden;
+}
+
+
+/* linhas */
+
+.link {
+
+    position: absolute;
+
+    height: 4px;
+
+    background:
+        #28516c;
+
+    transform-origin: left center;
+
+    border-radius: 5px;
+
+    opacity: .8;
+}
+
+.link::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 12px,
+            rgba(80,190,240,.55) 12px 20px
+        );
+
+    opacity: .5;
+}
+
+
+/* posições das linhas */
+
+.l1 {
+    left: 10%;
+    top: 62%;
+    width: 15%;
+}
+
+.l2 {
+    left: 25%;
+    top: 62%;
+    width: 16%;
+}
+
+.l3 {
+    left: 41%;
+    top: 62%;
+    width: 18%;
+}
+
+.l4 {
+    left: 59%;
+    top: 62%;
+    width: 15%;
+}
+
+.l5 {
+    left: 74%;
+    top: 62%;
+    width: 16%;
+}
+
+
+/* =========================================================
+   NÓS
+========================================================= */
+
+.node {
+
+    position: absolute;
+
+    top: 52%;
+
+    transform:
+        translate(-50%, -50%);
+
+    width: 112px;
+
+    padding: 12px 6px;
+
+    text-align: center;
+
+    border:
+        1px solid #315b77;
+
+    background:
+        linear-gradient(
+            180deg,
+            #12324a,
+            #0b2437
+        );
+
+    border-radius: 14px;
+
+    z-index: 3;
+}
+
+.node-icon {
+
+    font-size: 34px;
+
+    height: 42px;
+}
+
+.node-name {
+
+    font-weight: 800;
+
+    font-size: 14px;
+
+    white-space: nowrap;
+}
+
+.node-ip {
+
+    color: #6e99b6;
+
+    font-size: 11px;
+
+    margin-top: 3px;
+
+    white-space: nowrap;
+}
+
+
+.node-a {
+    left: 10%;
+}
+
+.node-sw1 {
+    left: 26%;
+}
+
+.node-r1 {
+    left: 42%;
+}
+
+.node-r2 {
+    left: 59%;
+}
+
+.node-sw2 {
+    left: 75%;
+}
+
+.node-b {
+    left: 90%;
+}
+
+
+/* internet */
+
+.internet {
+
+    position: absolute;
+
+    top: 12%;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    color: #82b9d8;
+
+    text-align: center;
+
+    font-weight: 800;
+
+    font-size: 13px;
+
+    opacity: .9;
+}
+
+.internet:first-line {
+
+    font-size: 40px;
+}
+
+
+/* =========================================================
+   PACOTES
+========================================================= */
+
+.packet {
+
+    position: absolute;
+
+    z-index: 20;
+
+    width: 126px;
+
+    min-height: 66px;
+
+    padding: 8px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0d5f8b,
+            #083b5a
+        );
+
+    border:
+        2px solid #28baf5;
+
+    box-shadow:
+        0 0 22px
+        rgba(22,168,240,.35);
+
+    text-align: center;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    pointer-events: auto;
+
+    cursor: pointer;
+
+    transform:
+        translate(-50%, -50%);
+}
+
+.packet.tcp {
+
+    border-color:
+        #24b9fa;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0e668f,
+            #073b59
+        );
+}
+
+.packet.udp {
+
+    border-color:
+        #ff8a3d;
+
+    background:
+        linear-gradient(
+            135deg,
+            #87451e,
+            #552912
+        );
+}
+
+.packet.lost {
+
+    background:
+        #6d1d31;
+
+    border-color:
+        #ff4d67;
+
+    box-shadow:
+        0 0 28px
+        rgba(255,77,103,.65);
+
+    animation:
+        packetLost .7s forwards;
+}
+
+@keyframes packetLost {
+
+    0% {
+        opacity: 1;
+        transform:
+            translate(-50%,-50%)
+            scale(1);
+    }
+
+    60% {
+        opacity: 1;
+        transform:
+            translate(-50%,-50%)
+            scale(1.2)
+            rotate(4deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate(-50%,-50%)
+            scale(.2)
+            rotate(-20deg);
+    }
+}
+
+.packet.retransmit {
+
+    animation:
+        retransmitGlow 1s infinite alternate;
+}
+
+@keyframes retransmitGlow {
+
+    from {
+        box-shadow:
+            0 0 10px
+            rgba(22,168,240,.3);
+    }
+
+    to {
+        box-shadow:
+            0 0 32px
+            rgba(22,168,240,.9);
+    }
+}
+
+
+/* =========================================================
+   STATUS DA REDE
+========================================================= */
+
+.network-status {
+
+    position: absolute;
+
+    left: 18px;
+
+    top: 18px;
+
+    z-index: 10;
+
+    padding: 7px 11px;
+
+    border-radius: 8px;
+
+    background:
+        rgba(3,15,25,.8);
+
+    border:
+        1px solid #23445e;
+
+    color: #8cb0c8;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+.network-status.tcp {
+
+    color: #6fd4ff;
+
+    border-color: #176d98;
+}
+
+.network-status.udp {
+
+    color: #ffad7b;
+
+    border-color: #985126;
+}
+
+.network-status.error {
+
+    color: #ff7185;
+
+    border-color: #b72c47;
+}
+
+.network-status.success {
+
+    color: #5ce59b;
+
+    border-color: #218957;
+}
+
+
+/* =========================================================
+   PAINEL DE ACOMPANHAMENTO
+   IMPORTANTE: FORA DO QUADRO DA REDE
+========================================================= */
+
+.event-panel {
+
+    min-height: 120px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 15px 20px;
+
+    background:
+        #0a1c2b;
+
+    border-top:
+        1px solid #1d4058;
+
+    border-bottom:
+        1px solid #1d4058;
+}
+
+.event-icon {
+
+    width: 60px;
+
+    height: 60px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 30px;
+
+    background:
+        #102e44;
+
+    border:
+        1px solid #2a5571;
+
+    border-radius: 13px;
+}
+
+.event-title {
+
+    font-size: 18px;
+
+    font-weight: 800;
+
+    color: white;
+}
+
+.event-description {
+
+    margin-top: 5px;
+
+    color: #a9c2d4;
+
+    line-height: 1.45;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   LINHA DO TEMPO
+========================================================= */
+
+.timeline-panel {
+
+    margin-top: 14px;
+}
+
+.timeline {
+
+    height: 145px;
+
+    padding: 18px 25px;
+}
+
+.timeline-track {
+
+    position: relative;
+
+    height: 100%;
+}
+
+.timeline-line {
+
+    position: absolute;
+
+    left: 5%;
+
+    right: 5%;
+
+    top: 42px;
+
+    height: 4px;
+
+    background:
+        #254b64;
+
+    border-radius: 4px;
+}
+
+.timeline-events {
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(6, 1fr);
+
+    height: 100%;
+}
+
+.timeline-item {
+
+    text-align: center;
+
+    color: #7595ac;
+
+    font-size: 12px;
+
+    position: relative;
+}
+
+.timeline-dot {
+
+    width: 23px;
+
+    height: 23px;
+
+    border-radius: 50%;
+
+    margin:
+        30px auto 9px;
+
+    background:
+        #18374d;
+
+    border:
+        3px solid #41647a;
+
+    transition:
+        .3s;
+}
+
+.timeline-item.active
+.timeline-dot {
+
+    background:
+        #16a8f0;
+
+    border-color:
+        #6fd7ff;
+
+    box-shadow:
+        0 0 18px
+        rgba(22,168,240,.7);
+}
+
+.timeline-item.done
+.timeline-dot {
+
+    background:
+        #28d17c;
+
+    border-color:
+        #70efb0;
+}
+
+.timeline-item.error
+.timeline-dot {
+
+    background:
+        #ff4d67;
+
+    border-color:
+        #ff91a1;
+
+    box-shadow:
+        0 0 18px
+        rgba(255,77,103,.7);
+}
+
+
+/* =========================================================
+   COLUNA DIREITA
+========================================================= */
+
+.right-column {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    min-width: 0;
+}
+
+.stack-panel {
+
+    flex-shrink: 0;
+}
+
+.stack-content {
+
+    padding: 13px;
+}
+
+.layer {
+
+    min-height: 58px;
+
+    padding: 10px 13px;
+
+    margin-bottom: 8px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background:
+        #102a40;
+
+    border:
+        1px solid #28516d;
+
+    border-radius: 10px;
+
+    transition:
+        .3s;
+}
+
+.layer-name {
+
+    font-weight: 800;
+
+    font-size: 14px;
+}
+
+.layer-info {
+
+    color: #7197b1;
+
+    font-size: 12px;
+}
+
+.layer.active {
+
+    background:
+        linear-gradient(
+            90deg,
+            #0d5d82,
+            #11344c
+        );
+
+    border-color:
+        #20b5f3;
+
+    box-shadow:
+        0 0 16px
+        rgba(22,168,240,.16);
+}
+
+.layer.success {
+
+    border-color:
+        #2c9f68;
+
+    background:
+        #10372a;
+}
+
+
+/* =========================================================
+   INSPEÇÃO
+========================================================= */
+
+.inspector-panel {
+
+    flex: 1;
+
+    min-height: 300px;
+}
+
+.inspector-content {
+
+    padding: 14px;
+
+    min-height: 250px;
+}
+
+.empty {
+
+    height: 220px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    color: #7192aa;
+
+    line-height: 1.6;
+
+    padding: 25px;
+}
+
+.packet-inspection {
+
+    background:
+        #081b2a;
+
+    border:
+        1px solid #28516d;
+
+    border-radius: 10px;
+
+    padding: 13px;
+}
+
+.inspection-title {
+
+    color: #42c7ff;
+
+    font-weight: 800;
+
+    margin-bottom: 12px;
+}
+
+.header-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 7px 0;
+
+    border-bottom:
+        1px solid #17364b;
+
+    font-size: 13px;
+}
+
+.header-row span:first-child {
+
+    color: #7397b0;
+}
+
+.header-row span:last-child {
+
+    color: #e6f3fb;
+
+    font-weight: 700;
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0,0,0,.72);
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 500;
+}
+
+.modal.show {
+
+    display: flex;
+}
+
+.modal-card {
+
+    width: min(600px, 90vw);
+
+    background:
+        #0c2132;
+
+    border:
+        1px solid #2d5874;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 25px 80px
+        rgba(0,0,0,.5);
+}
+
+.modal-header {
+
+    padding: 15px 18px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    background:
+        #112c42;
+
+    border-bottom:
+        1px solid #23445e;
+}
+
+.modal-header h2 {
+
+    margin: 0;
+
+    font-size: 18px;
+}
+
+.modal-header button {
+
+    min-height: auto;
+
+    padding: 5px 10px;
+}
+
+.modal-body {
+
+    padding: 20px;
+
+    color: #bcd0df;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   RODAPÉ
+========================================================= */
+
+.footer-note {
+
+    padding: 8px 14px 15px;
+
+    color: #52738a;
+
+    font-size: 11px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1250px) {
+
+    .main {
+
+        grid-template-columns:
+            250px
+            minmax(480px, 1fr)
+            300px;
+    }
+
+    .top-actions button {
+
+        padding:
+            10px 12px;
+
+        font-size: 14px;
+    }
+
+}
+
+@media (max-width: 1000px) {
+
+    .topbar {
+
+        height: auto;
+
+        grid-template-columns: 1fr;
+
+        padding: 15px;
+    }
+
+    .top-actions,
+    .protocol-selector {
+
+        justify-content: flex-start;
+
+        flex-wrap: wrap;
+    }
+
+    .main {
+
+        grid-template-columns: 1fr;
+    }
+
+    .left-column {
+
+        height: auto;
+
+        position: static;
+    }
+
+    .control-scroll {
+
+        height: auto;
+
+        overflow: visible;
+    }
+
+    .right-column {
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .right-column {
+
+        grid-template-columns: 1fr;
+    }
+
+    .network {
+
+        height: 390px;
+
+        overflow-x: auto;
+    }
+
+    .node {
+
+        width: 90px;
+    }
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+::-webkit-scrollbar {
+
+    width: 9px;
+
+    height: 9px;
+}
+
+::-webkit-scrollbar-track {
+
+    background:
+        #071521;
+}
+
+::-webkit-scrollbar-thumb {
+
+    background:
+        #294a61;
+
+    border-radius:
+        10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+    background:
+        #39637e;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =======================================================
+     CABEÇALHO
+======================================================= -->
+
+<header class="topbar">
+
+
+    <div class="logo">
+
+        <h1>
+            🧪 Laboratório TCP/IP
+        </h1>
+
+        <span>
+            Observe os protocolos funcionando
+        </span>
+
+    </div>
+
+
+    <div class="top-actions">
+
+        <button
+            class="primary"
+            onclick="sendMessage()">
+
+            📨 Enviar mensagem
+
+        </button>
+
+
+        <button
+            onclick="startTCP()">
+
+            🤝 Conexão TCP
+
+        </button>
+
+
+        <button
+            class="danger"
+            id="lossButtonTop"
+            onclick="armLoss()">
+
+            💥 Simular perda
+
+        </button>
+
+
+        <button
+            onclick="stepSimulation()">
+
+            ⏭ Próxima etapa
+
+        </button>
+
+    </div>
+
+
+    <div class="protocol-selector">
+
+        <button
+            id="tcpButton"
+            class="tcp active-tcp"
+            onclick="setProtocol('TCP')">
+
+            🔵 TCP
+
+        </button>
+
+
+        <button
+            id="udpButton"
+            class="udp"
+            onclick="setProtocol('UDP')">
+
+            🟠 UDP
+
+        </button>
+
+    </div>
+
+
+</header>
+
+
+
+<!-- =======================================================
+     CONTEÚDO
+======================================================= -->
+
+<main class="main">
+
+
+<!-- =======================================================
+     CONTROLE
+======================================================= -->
+
+<section class="panel left-column">
+
+
+    <div class="panel-title">
+
+        🎛 CONTROLE
+
+    </div>
+
+
+    <div class="control-scroll">
+
+
+        <div class="control-group">
+
+            <div class="control-title">
+                Comunicação
+            </div>
+
+
+            <button
+                class="big-button primary"
+                onclick="sendMessage()">
+
+                📨 Enviar dados
+
+            </button>
+
+
+            <button
+                class="big-button"
+                onclick="startTCP()">
+
+                🤝 Fazer handshake TCP
+
+            </button>
+
+
+            <button
+                class="big-button"
+                onclick="sendACKManually()">
+
+                ✔ Enviar ACK
+
+            </button>
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <div class="control-title">
+                Experimentos
+            </div>
+
+
+            <button
+                class="big-button danger"
+                id="lossButtonSide"
+                onclick="armLoss()">
+
+                💥 Perder próximo pacote
+
+            </button>
+
+
+            <button
+                class="big-button"
+                onclick="duplicatePacket()">
+
+                📋 Duplicar pacote
+
+            </button>
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <div class="control-title">
+                Modo de aula
+            </div>
+
+
+            <button
+                class="big-button"
+                onclick="toggleAuto()"
+                id="autoButton">
+
+                ▶ Modo automático
+
+            </button>
+
+
+            <button
+                class="big-button"
+                onclick="resetSimulation()">
+
+                🔄 Reiniciar laboratório
+
+            </button>
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <div class="control-title">
+                Situação atual
+            </div>
+
+
+            <div
+                class="info-box"
+                id="controlInfo">
+
+                Laboratório pronto.<br><br>
+
+                Escolha TCP ou UDP e envie
+                uma mensagem.
+
+            </div>
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <div class="control-title">
+                💡 Dica para o professor
+            </div>
+
+
+            <div class="info-box">
+
+                Não explique tudo antes.
+
+                <br><br>
+
+                Primeiro arme a perda e
+                depois envie a mensagem.
+
+                <br><br>
+
+                Pergunte:
+
+                <br><br>
+
+                <b>
+                    "O que vocês acham que
+                    vai acontecer?"
+                </b>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =======================================================
+     CENTRO
+======================================================= -->
+
+<section class="center-column">
+
+
+    <div class="panel network-panel">
+
+
+        <div class="panel-title">
+
+            🌐 REDE — visualização da comunicação
+
+        </div>
+
+
+        <!-- mensagem da aplicação -->
+
+        <div class="application-message">
+
+
+            <div class="app-icon">
+                📝
+            </div>
+
+
+            <div>
+
+                <div class="app-label">
+                    Mensagem gerada pela aplicação
+                </div>
+
+
+                <div
+                    class="app-message-text"
+                    id="applicationText">
+
+                    "Olá, servidor!"
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- QUADRO DA REDE -->
+
+        <div
+            class="network"
+            id="network">
+
+
+            <div
+                class="network-status"
+                id="networkStatus">
+
+                ● Aguardando transmissão
+
+            </div>
+
+
+            <!-- LINHAS -->
+
+            <div class="link l1"></div>
+            <div class="link l2"></div>
+            <div class="link l3"></div>
+            <div class="link l4"></div>
+            <div class="link l5"></div>
+
+
+            <!-- COMPUTADOR -->
+
+            <div class="node node-a">
+
+                <div class="node-icon">
+                    💻
+                </div>
+
+                <div class="node-name">
+                    Computador A
+                </div>
+
+                <div class="node-ip">
+                    192.168.1.10
+                </div>
+
+            </div>
+
+
+            <!-- SWITCH -->
+
+            <div class="node node-sw1">
+
+                <div class="node-icon">
+                    🔀
+                </div>
+
+                <div class="node-name">
+                    Switch
+                </div>
+
+                <div class="node-ip">
+                    rede local
+                </div>
+
+            </div>
+
+
+            <!-- ROTEADOR -->
+
+            <div class="node node-r1">
+
+                <div class="node-icon">
+                    📡
+                </div>
+
+                <div class="node-name">
+                    Roteador
+                </div>
+
+                <div class="node-ip">
+                    gateway
+                </div>
+
+            </div>
+
+
+            <!-- INTERNET -->
+
+            <div class="internet">
+
+                ☁️
+
+                <br>
+
+                INTERNET
+
+            </div>
+
+
+            <!-- ROTEADOR 2 -->
+
+            <div class="node node-r2">
+
+                <div class="node-icon">
+                    📡
+                </div>
+
+                <div class="node-name">
+                    Roteador
+                </div>
+
+                <div class="node-ip">
+                    rede destino
+                </div>
+
+            </div>
+
+
+            <!-- SWITCH 2 -->
+
+            <div class="node node-sw2">
+
+                <div class="node-icon">
+                    🔀
+                </div>
+
+                <div class="node-name">
+                    Switch
+                </div>
+
+                <div class="node-ip">
+                    rede local
+                </div>
+
+            </div>
+
+
+            <!-- SERVIDOR -->
+
+            <div class="node node-b">
+
+                <div class="node-icon">
+                    🖥️
+                </div>
+
+                <div class="node-name">
+                    Servidor B
+                </div>
+
+                <div class="node-ip">
+                    192.168.2.20
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             ACOMPANHAMENTO
+             FICA FORA DO QUADRO DA REDE
+        ================================================== -->
+
+        <div class="event-panel">
+
+
+            <div
+                class="event-icon"
+                id="eventIcon">
+
+                📡
+
+            </div>
+
+
+            <div>
+
+                <div
+                    class="event-title"
+                    id="eventTitle">
+
+                    Laboratório pronto
+
+                </div>
+
+
+                <div
+                    class="event-description"
+                    id="eventDescription">
+
+                    Escolha um protocolo e envie
+                    uma mensagem.
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- ===================================================
+         LINHA DO TEMPO
+    =================================================== -->
+
+    <div class="panel timeline-panel">
+
+
+        <div class="panel-title">
+
+            🧭 LINHA DO TEMPO DA COMUNICAÇÃO
+
+        </div>
+
+
+        <div class="timeline">
+
+
+            <div class="timeline-track">
+
+
+                <div class="timeline-line"></div>
+
+
+                <div class="timeline-events">
+
+
+                    <div
+                        class="timeline-item"
+                        id="t1">
+
+                        <div class="timeline-dot"></div>
+
+                        Aplicação
+
+                    </div>
+
+
+                    <div
+                        class="timeline-item"
+                        id="t2">
+
+                        <div class="timeline-dot"></div>
+
+                        Transporte
+
+                    </div>
+
+
+                    <div
+                        class="timeline-item"
+                        id="t3">
+
+                        <div class="timeline-dot"></div>
+
+                        IP
+
+                    </div>
+
+
+                    <div
+                        class="timeline-item"
+                        id="t4">
+
+                        <div class="timeline-dot"></div>
+
+                        Ethernet
+
+                    </div>
+
+
+                    <div
+                        class="timeline-item"
+                        id="t5">
+
+                        <div class="timeline-dot"></div>
+
+                        Rede
+
+                    </div>
+
+
+                    <div
+                        class="timeline-item"
+                        id="t6">
+
+                        <div class="timeline-dot"></div>
+
+                        Servidor
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+
+<!-- =======================================================
+     DIREITA
+======================================================= -->
+
+<section class="right-column">
+
+
+    <!-- PILHA -->
+
+    <div class="panel stack-panel">
+
+
+        <div class="panel-title">
+
+            🧱 PILHA DE PROTOCOLOS
+
+        </div>
+
+
+        <div class="stack-content">
+
+
+            <div
+                class="layer"
+                id="layer-app">
+
+                <span class="layer-name">
+                    7 — Aplicação
+                </span>
+
+                <span class="layer-info">
+                    HTTP / dados
+                </span>
+
+            </div>
+
+
+            <div
+                class="layer"
+                id="layer-transport">
+
+                <span class="layer-name">
+                    4 — Transporte
+                </span>
+
+                <span
+                    class="layer-info"
+                    id="transportLabel">
+
+                    TCP
+
+                </span>
+
+            </div>
+
+
+            <div
+                class="layer"
+                id="layer-ip">
+
+                <span class="layer-name">
+                    3 — Internet
+                </span>
+
+                <span class="layer-info">
+                    IPv4
+                </span>
+
+            </div>
+
+
+            <div
+                class="layer"
+                id="layer-ethernet">
+
+                <span class="layer-name">
+                    2 — Enlace
+                </span>
+
+                <span class="layer-info">
+                    Ethernet
+                </span>
+
+            </div>
+
+
+            <div
+                class="info-box">
+
+                <b>
+                    Encapsulamento
+                </b>
+
+                <br><br>
+
+                A mensagem desce pela pilha.
+
+                <br><br>
+
+                Cada camada acrescenta informações
+                necessárias para transportar os dados.
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- INSPEÇÃO -->
+
+    <div class="panel inspector-panel">
+
+
+        <div class="panel-title">
+
+            🔎 INSPEÇÃO DO PACOTE
+
+        </div>
+
+
+        <div
+            class="inspector-content"
+            id="inspector">
+
+
+            <div class="empty">
+
+                Clique em um pacote durante a
+                simulação para examinar seus
+                cabeçalhos.
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+</section>
+
+
+</main>
+
+
+<div class="footer-note">
+
+    Laboratório didático — a simulação representa
+    visualmente conceitos fundamentais de TCP/IP.
+
+</div>
+
+
+
+<!-- =======================================================
+     MODAL
+======================================================= -->
+
+<div
+    class="modal"
+    id="modal">
+
+
+    <div class="modal-card">
+
+
+        <div class="modal-header">
+
+
+            <h2 id="modalTitle">
+                Pacote
+            </h2>
+
+
+            <button
+                onclick="closeModal()">
+
+                ✕
+
+            </button>
+
+
+        </div>
+
+
+        <div
+            class="modal-body"
+            id="modalBody">
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   ESTADO DA SIMULAÇÃO
+========================================================= */
+
+let protocol = "TCP";
+
+let lossArmed = false;
+
+let simulationRunning = false;
+
+let autoMode = false;
+
+let currentStage = 0;
+
+let packetCounter = 0;
+
+let lastPacket = null;
+
+
+/* =========================================================
+   ELEMENTOS
+========================================================= */
+
+const network =
+    document.getElementById("network");
+
+const eventIcon =
+    document.getElementById("eventIcon");
+
+const eventTitle =
+    document.getElementById("eventTitle");
+
+const eventDescription =
+    document.getElementById("eventDescription");
+
+const controlInfo =
+    document.getElementById("controlInfo");
+
+const networkStatus =
+    document.getElementById("networkStatus");
+
+const inspector =
+    document.getElementById("inspector");
+
+
+/* =========================================================
+   PROTOCOLO
+========================================================= */
+
+function setProtocol(p) {
+
+    if (simulationRunning) {
+
+        showStage(
+            "⏳",
+            "Simulação em andamento",
+            "Aguarde a transmissão terminar para trocar o protocolo."
+        );
+
+        return;
+    }
+
+
+    protocol = p;
+
+
+    document
+        .getElementById("transportLabel")
+        .textContent = p;
+
+
+    document
+        .getElementById("tcpButton")
+        .classList.toggle(
+            "active-tcp",
+            p === "TCP"
+        );
+
+
+    document
+        .getElementById("udpButton")
+        .classList.toggle(
+            "active-udp",
+            p === "UDP"
+        );
+
+
+    updateNetworkStatus(
+        p === "TCP"
+            ? "🔵 TCP selecionado"
+            : "🟠 UDP selecionado",
+        p.toLowerCase()
+    );
+
+
+    updateControlInfo(
+        p === "TCP"
+            ?
+            "🔵 TCP selecionado.<br><br>" +
+            "Se houver perda, o TCP irá retransmitir."
+            :
+            "🟠 UDP selecionado.<br><br>" +
+            "Se houver perda, o UDP não irá retransmitir."
+    );
+
+
+    showStage(
+        p === "TCP" ? "🔵" : "🟠",
+        "Protocolo selecionado",
+        p === "TCP"
+            ?
+            "O experimento utilizará TCP. " +
+            "Observe principalmente confirmação e retransmissão."
+            :
+            "O experimento utilizará UDP. " +
+            "Observe que não existe retransmissão automática."
+    );
+}
+
+
+/* =========================================================
+   ARMAR PERDA
+========================================================= */
+
+function armLoss() {
+
+    if (simulationRunning) {
+
+        showStage(
+            "⏳",
+            "Transmissão em andamento",
+            "A perda deve ser armada antes de enviar a mensagem."
+        );
+
+        return;
+    }
+
+
+    lossArmed = true;
+
+
+    document
+        .getElementById("lossButtonTop")
+        .classList.add("armed");
+
+
+    document
+        .getElementById("lossButtonSide")
+        .classList.add("armed");
+
+
+    updateNetworkStatus(
+        "💥 PERDA ARMADA — próximo pacote será perdido",
+        "error"
+    );
+
+
+    updateControlInfo(
+
+        "💥 <b>Perda armada.</b><br><br>" +
+
+        (
+            protocol === "TCP"
+                ?
+                "O próximo segmento TCP será perdido. " +
+                "Depois observe a retransmissão."
+                :
+                "O próximo datagrama UDP será perdido. " +
+                "Depois observe que o UDP continuará sem retransmitir."
+        )
+
+    );
+
+
+    showStage(
+        "💥",
+        "Perda de pacote ARMADA",
+        "Agora clique em Enviar dados para iniciar o experimento."
+    );
+}
+
+
+/* =========================================================
+   ENVIAR MENSAGEM
+========================================================= */
+
+function sendMessage() {
+
+    if (simulationRunning) {
+
+        showStage(
+            "⏳",
+            "Transmissão em andamento",
+            "Aguarde a etapa atual terminar."
+        );
+
+        return;
+    }
+
+
+    simulationRunning = true;
+
+    currentStage = 0;
+
+    clearPacket();
+
+    resetTimeline();
+
+    resetLayers();
+
+
+    if (protocol === "TCP") {
+
+        simulateTCP();
+
+    } else {
+
+        simulateUDP();
+
+    }
+}
+
+
+/* =========================================================
+   TCP
+========================================================= */
+
+function simulateTCP() {
+
+
+    updateNetworkStatus(
+        "🔵 TCP — iniciando transmissão",
+        "tcp"
+    );
+
+
+    showStage(
+        "📨",
+        "Aplicação criou a mensagem",
+        "A aplicação produziu os dados: \"Olá, servidor!\""
+    );
+
+    activateTimeline(1);
+
+    activateLayer("layer-app");
+
+
+    setTimeout(() => {
+
+        showStage(
+            "📦",
+            "TCP criou um segmento",
+            "A camada de transporte adicionou informações como portas e sequência."
+        );
+
+        activateTimeline(2);
+
+        activateLayer("layer-transport");
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+        showStage(
+            "🌐",
+            "IP criou o pacote",
+            "O segmento TCP foi encapsulado dentro de um pacote IPv4."
+        );
+
+        activateTimeline(3);
+
+        activateLayer("layer-ip");
+
+
+    }, 10000);
+
+
+    setTimeout(() => {
+
+        showStage(
+            "🔌",
+            "Ethernet colocou o pacote no enlace",
+            "Agora o quadro está pronto para atravessar a rede local."
+        );
+
+        activateTimeline(4);
+
+        activateLayer("layer-ethernet");
+
+
+    }, 15000);
+
+
+    setTimeout(() => {
+
+        showStage(
+            "📡",
+            "Pacote atravessando a rede",
+            "O pacote está seguindo de Computador A até o Servidor B."
+        );
+
+        activateTimeline(5);
+
+        createPacket(
+            "TCP",
+            "SEGMENTO TCP #1",
+            "normal"
+        );
+
+        animatePacketToServer(() => {
+
+            if (lossArmed) {
+
+                handleTCPLoss();
+
+            } else {
+
+                handleTCPSuccess();
+
+            }
+
+        });
+
+    }, 20000);
+
+}
+
+
+/* =========================================================
+   PERDA TCP
+========================================================= */
+
+function handleTCPLoss() {
+
+
+    lossArmed = false;
+
+    removeLossButtonState();
+
+
+    updateNetworkStatus(
+        "💥 TCP — segmento perdido",
+        "error"
+    );
+
+
+    showStage(
+        "💥",
+        "SEGMENTO TCP PERDIDO",
+        "O segmento desapareceu antes de chegar ao servidor. O servidor NÃO recebeu esses dados."
+    );
+
+
+    updateControlInfo(
+
+        "💥 <b>SEGMENTO PERDIDO</b><br><br>" +
+
+        "O TCP ainda NÃO pode concluir a comunicação.<br><br>" +
+
+        "Observe agora: o TCP precisa recuperar o segmento."
+
+    );
+
+
+    markTimelineError(5);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "⏳",
+            "TCP aguardando confirmação",
+            "O segmento perdido não produziu um ACK válido."
+        );
+
+
+        updateNetworkStatus(
+            "⏳ TCP aguardando confirmação",
+            "error"
+        );
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "🔁",
+            "TCP retransmitindo o segmento",
+            "Como o segmento não foi confirmado, o TCP envia novamente os dados."
+        );
+
+
+        updateNetworkStatus(
+            "🔁 TCP — RETRANSMISSÃO",
+            "tcp"
+        );
+
+
+        createPacket(
+            "TCP",
+            "TCP #1 — RETRANSMISSÃO",
+            "retransmit"
+        );
+
+
+        animatePacketToServer(() => {
+
+
+            activateTimeline(6);
+
+
+            showStage(
+                "🖥️",
+                "Servidor recebeu o segmento",
+                "Agora o servidor recebeu o segmento que estava faltando."
+            );
+
+
+            updateControlInfo(
+                "📥 Segmento retransmitido recebido."
+            );
+
+
+        });
+
+
+    }, 10000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "✔️",
+            "Servidor enviou ACK",
+            "O servidor confirmou que recebeu o segmento."
+        );
+
+
+        updateNetworkStatus(
+            "✔️ TCP — ACK recebido",
+            "success"
+        );
+
+
+    }, 15000);
+
+
+    setTimeout(() => {
+
+
+        markAllTimelineDone();
+
+
+        activateLayer("layer-transport", true);
+
+
+        showStage(
+            "✅",
+            "TCP — TRANSMISSÃO CONCLUÍDA",
+            "Mesmo com a perda, o TCP recuperou os dados através da retransmissão."
+        );
+
+
+        updateControlInfo(
+
+            "✅ <b>TCP concluiu a comunicação.</b><br><br>" +
+
+            "Houve perda de pacote, mas o TCP recuperou " +
+            "a informação através da retransmissão."
+
+        );
+
+
+        simulationRunning = false;
+
+
+        updateNetworkStatus(
+            "✅ TCP — comunicação concluída",
+            "success"
+        );
+
+
+    }, 20000);
+
+}
+
+
+/* =========================================================
+   TCP SEM PERDA
+========================================================= */
+
+function handleTCPSuccess() {
+
+
+    showStage(
+        "🖥️",
+        "Servidor recebeu o segmento",
+        "O segmento chegou corretamente ao Servidor B."
+    );
+
+
+    activateTimeline(6);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "✔️",
+            "Servidor enviou ACK",
+            "O TCP recebeu a confirmação de que os dados chegaram."
+        );
+
+
+        updateNetworkStatus(
+            "✔️ TCP — ACK recebido",
+            "success"
+        );
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+
+        markAllTimelineDone();
+
+
+        showStage(
+            "✅",
+            "TCP — TRANSMISSÃO CONCLUÍDA",
+            "Os dados chegaram e foram confirmados pelo servidor."
+        );
+
+
+        updateControlInfo(
+            "✅ TCP concluiu a comunicação normalmente."
+        );
+
+
+        simulationRunning = false;
+
+    }, 10000);
+
+}
+
+
+/* =========================================================
+   UDP
+========================================================= */
+
+function simulateUDP() {
+
+
+    updateNetworkStatus(
+        "🟠 UDP — iniciando transmissão",
+        "udp"
+    );
+
+
+    showStage(
+        "📨",
+        "Aplicação criou a mensagem",
+        "A aplicação produziu os dados que serão enviados."
+    );
+
+
+    activateTimeline(1);
+
+    activateLayer("layer-app");
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "📦",
+            "UDP criou um datagrama",
+            "O UDP adicionou seu cabeçalho, mas não estabelece uma conexão."
+        );
+
+
+        activateTimeline(2);
+
+        activateLayer("layer-transport");
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "🌐",
+            "IP criou o pacote",
+            "O datagrama UDP foi encapsulado em um pacote IPv4."
+        );
+
+
+        activateTimeline(3);
+
+        activateLayer("layer-ip");
+
+
+    }, 10000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "🔌",
+            "Ethernet colocou o quadro no enlace",
+            "O quadro está pronto para atravessar a rede."
+        );
+
+
+        activateTimeline(4);
+
+        activateLayer("layer-ethernet");
+
+
+    }, 15000);
+
+
+    setTimeout(() => {
+
+
+        createPacket(
+            "UDP",
+            "DATAGRAMA UDP #1",
+            "normal"
+        );
+
+
+        activateTimeline(5);
+
+
+        animatePacketToServer(() => {
+
+
+            if (lossArmed) {
+
+                handleUDPLoss();
+
+            } else {
+
+                handleUDPSuccess();
+
+            }
+
+        });
+
+
+    }, 20000);
+
+}
+
+
+/* =========================================================
+   PERDA UDP
+========================================================= */
+
+function handleUDPLoss() {
+
+
+    lossArmed = false;
+
+    removeLossButtonState();
+
+
+    updateNetworkStatus(
+        "💥 UDP — datagrama perdido",
+        "error"
+    );
+
+
+    showStage(
+        "💥",
+        "DATAGRAMA UDP PERDIDO",
+        "O datagrama desapareceu no caminho. O UDP não vai retransmiti-lo."
+    );
+
+
+    updateControlInfo(
+
+        "💥 <b>DATAGRAMA PERDIDO</b><br><br>" +
+
+        "O UDP não possui retransmissão automática.<br><br>" +
+
+        "Observe: a transmissão continua mesmo com " +
+        "a informação faltando."
+
+    );
+
+
+    markTimelineError(5);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "➡️",
+            "UDP continua transmitindo",
+            "O UDP não espera ACK e não retransmite o datagrama perdido."
+        );
+
+
+        updateNetworkStatus(
+            "🟠 UDP — transmissão continua",
+            "udp"
+        );
+
+
+        createPacket(
+            "UDP",
+            "DATAGRAMA UDP #2",
+            "normal"
+        );
+
+
+        animatePacketToServer(() => {
+
+
+            showStage(
+                "🖥️",
+                "Servidor recebeu outro datagrama",
+                "O servidor recebeu os dados seguintes, mas o primeiro datagrama não chegou."
+            );
+
+
+            activateTimeline(6);
+
+        });
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "📦",
+            "Outro datagrama chegou",
+            "O servidor continua recebendo os datagramas que conseguem atravessar a rede."
+        );
+
+
+        createPacket(
+            "UDP",
+            "DATAGRAMA UDP #3",
+            "normal"
+        );
+
+
+        animatePacketToServer();
+
+
+    }, 10000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "⚠️",
+            "MENSAGEM INCOMPLETA",
+            "O servidor recebeu parte dos dados, mas existe uma informação que nunca chegou."
+        );
+
+
+        updateControlInfo(
+
+            "⚠️ <b>UDP terminou o envio.</b><br><br>" +
+
+            "O primeiro datagrama foi perdido.<br>" +
+
+            "O UDP não o retransmitiu.<br><br>" +
+
+            "<b>Resultado: mensagem incompleta.</b>"
+
+        );
+
+
+    }, 15000);
+
+
+    setTimeout(() => {
+
+
+        markAllTimelineDone();
+
+
+        showStage(
+            "🟠",
+            "UDP — TRANSMISSÃO ENCERRADA",
+            "O UDP não recuperou o datagrama perdido. A aplicação é responsável por lidar com essa situação."
+        );
+
+
+        updateNetworkStatus(
+            "⚠️ UDP — dados incompletos",
+            "error"
+        );
+
+
+        simulationRunning = false;
+
+
+    }, 20000);
+
+}
+
+
+/* =========================================================
+   UDP SEM PERDA
+========================================================= */
+
+function handleUDPSuccess() {
+
+
+    activateTimeline(6);
+
+
+    showStage(
+        "🖥️",
+        "Servidor recebeu o datagrama",
+        "O datagrama UDP chegou ao destino."
+    );
+
+
+    setTimeout(() => {
+
+
+        markAllTimelineDone();
+
+
+        showStage(
+            "🟠",
+            "UDP — TRANSMISSÃO ENCERRADA",
+            "O datagrama foi entregue. Observe que não houve handshake nem ACK do TCP."
+        );
+
+
+        updateNetworkStatus(
+            "🟠 UDP — transmissão encerrada",
+            "udp"
+        );
+
+
+        updateControlInfo(
+            "🟠 UDP encerrou o envio sem estabelecer uma conexão."
+        );
+
+
+        simulationRunning = false;
+
+
+    }, 5000);
+
+}
+
+
+/* =========================================================
+   CRIA PACOTE
+========================================================= */
+
+function createPacket(
+    proto,
+    label,
+    mode
+) {
+
+
+    clearPacket();
+
+
+    packetCounter++;
+
+
+    const packet =
+        document.createElement("div");
+
+
+    packet.className =
+        "packet " +
+        proto.toLowerCase();
+
+
+    if (mode === "retransmit") {
+
+        packet.classList.add(
+            "retransmit"
+        );
+
+    }
+
+
+    packet.innerHTML =
+
+        "<div style='font-size:22px'>" +
+
+        (
+            proto === "TCP"
+                ? "📦"
+                : "🟠"
+        )
+
+        +
+
+        "</div>" +
+
+        "<div>" +
+
+        label +
+
+        "</div>" +
+
+
+        "<div style='font-size:10px;opacity:.75'>" +
+
+        (
+            proto === "TCP"
+                ? "porta 5000 → 80"
+                : "porta 5000 → 5000"
+        )
+
+        +
+
+        "</div>";
+
+
+    packet.style.left = "10%";
+
+    packet.style.top = "62%";
+
+
+    packet.onclick = function() {
+
+        inspectPacket(
+            proto,
+            label,
+            mode
+        );
+
+    };
+
+
+    network.appendChild(packet);
+
+
+    lastPacket = packet;
+
+}
+
+
+/* =========================================================
+   ANIMAÇÃO DO PACOTE
+========================================================= */
+
+function animatePacketToServer(
+    callback
+) {
+
+
+    if (!lastPacket) {
+
+        if (callback) callback();
+
+        return;
+    }
+
+
+    const packet = lastPacket;
+
+
+    const points = [
+
+        { x: 10, y: 62 },
+
+        { x: 26, y: 62 },
+
+        { x: 42, y: 62 },
+
+        { x: 59, y: 62 },
+
+        { x: 75, y: 62 },
+
+        { x: 90, y: 62 }
+
+    ];
+
+
+    let index = 0;
+
+
+    function move() {
+
+
+        if (index >= points.length) {
+
+
+            if (callback) {
+
+                callback();
+
+            }
+
+
+            return;
+
+        }
+
+
+        packet.style.transition =
+            "left 1.4s ease-in-out";
+
+
+        packet.style.left =
+            points[index].x + "%";
+
+
+        index++;
+
+
+        setTimeout(
+            move,
+            1450
+        );
+
+    }
+
+
+    move();
+
+}
+
+
+/* =========================================================
+   PERDA VISUAL
+========================================================= */
+
+function animatePacketLost() {
+
+    if (!lastPacket) return;
+
+    lastPacket.classList.add(
+        "lost"
+    );
+
+}
+
+
+/* =========================================================
+   ATUALIZAÇÃO DO EVENTO
+========================================================= */
+
+function showStage(
+    icon,
+    title,
+    description
+) {
+
+    eventIcon.textContent = icon;
+
+    eventTitle.textContent = title;
+
+    eventDescription.textContent =
+        description;
+
+}
+
+
+/* =========================================================
+   CONTROLE
+========================================================= */
+
+function updateControlInfo(
+    text
+) {
+
+    controlInfo.innerHTML = text;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function updateNetworkStatus(
+    text,
+    type = ""
+) {
+
+    networkStatus.textContent =
+        text;
+
+    networkStatus.className =
+        "network-status " + type;
+
+}
+
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+function activateTimeline(
+    number
+) {
+
+    for (
+        let i = 1;
+        i <= number;
+        i++
+    ) {
+
+        const item =
+            document.getElementById(
+                "t" + i
+            );
+
+        if (item) {
+
+            item.classList.add(
+                "done"
+            );
+
+        }
+
+    }
+
+
+    const current =
+        document.getElementById(
+            "t" + number
+        );
+
+    if (current) {
+
+        current.classList.add(
+            "active"
+        );
+
+    }
+
+}
+
+
+function markTimelineError(
+    number
+) {
+
+    const item =
+        document.getElementById(
+            "t" + number
+        );
+
+    if (item) {
+
+        item.classList.remove(
+            "active"
+        );
+
+        item.classList.add(
+            "error"
+        );
+
+    }
+
+}
+
+
+function markAllTimelineDone() {
+
+    for (
+        let i = 1;
+        i <= 6;
+        i++
+    ) {
+
+        const item =
+            document.getElementById(
+                "t" + i
+            );
+
+        if (item) {
+
+            item.classList.remove(
+                "active",
+                "error"
+            );
+
+            item.classList.add(
+                "done"
+            );
+
+        }
+
+    }
+
+}
+
+
+function resetTimeline() {
+
+    for (
+        let i = 1;
+        i <= 6;
+        i++
+    ) {
+
+        const item =
+            document.getElementById(
+                "t" + i
+            );
+
+        if (item) {
+
+            item.classList.remove(
+                "active",
+                "done",
+                "error"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   CAMADAS
+========================================================= */
+
+function activateLayer(
+    id,
+    success = false
+) {
+
+
+    document
+        .querySelectorAll(".layer")
+        .forEach(
+            layer => {
+
+                layer.classList.remove(
+                    "active"
+                );
+
+            }
+        );
+
+
+    const layer =
+        document.getElementById(id);
+
+
+    if (layer) {
+
+        layer.classList.add(
+            success
+                ? "success"
+                : "active"
+        );
+
+    }
+
+}
+
+
+function resetLayers() {
+
+    document
+        .querySelectorAll(".layer")
+        .forEach(
+            layer => {
+
+                layer.classList.remove(
+                    "active",
+                    "success"
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   INSPEÇÃO DO PACOTE
+========================================================= */
+
+function inspectPacket(
+    proto,
+    label,
+    mode
+) {
+
+
+    const isTCP =
+        proto === "TCP";
+
+
+    const port =
+        isTCP
+            ? "80"
+            : "5000";
+
+
+    const sequence =
+        isTCP
+            ? "1001"
+            : "—";
+
+
+    const ack =
+        isTCP
+            ? "esperado"
+            : "não utilizado";
+
+
+    inspector.innerHTML = `
+
+        <div class="packet-inspection">
+
+            <div class="inspection-title">
+
+                ${isTCP ? "🔵" : "🟠"}
+                ${label}
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Protocolo</span>
+
+                <span>${proto}</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Origem</span>
+
+                <span>192.168.1.10</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Destino</span>
+
+                <span>192.168.2.20</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Porta destino</span>
+
+                <span>${port}</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Número de sequência</span>
+
+                <span>${sequence}</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Confirmação</span>
+
+                <span>${ack}</span>
+
+            </div>
+
+
+            <div class="header-row">
+
+                <span>Estado</span>
+
+                <span>
+                    ${
+                        mode === "retransmit"
+                            ? "RETRANSMISSÃO"
+                            : "transmitindo"
+                    }
+                </span>
+
+            </div>
+
+
+            <br>
+
+
+            <div class="info-box">
+
+                ${
+                    isTCP
+
+                    ?
+
+                    "<b>TCP:</b> este segmento " +
+                    "faz parte de uma comunicação orientada " +
+                    "à conexão e pode ser retransmitido " +
+                    "caso não seja confirmado."
+
+                    :
+
+                    "<b>UDP:</b> este datagrama é " +
+                    "enviado sem estabelecimento de conexão " +
+                    "e sem confirmação de recebimento " +
+                    "na camada de transporte."
+
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   DUPLICAR PACOTE
+========================================================= */
+
+function duplicatePacket() {
+
+
+    if (!lastPacket) {
+
+        showStage(
+            "📋",
+            "Nenhum pacote disponível",
+            "Execute uma transmissão antes de duplicar um pacote."
+        );
+
+        return;
+    }
+
+
+    const clone =
+        lastPacket.cloneNode(true);
+
+
+    clone.style.left =
+        lastPacket.style.left;
+
+    clone.style.top =
+        "48%";
+
+
+    clone.onclick =
+        lastPacket.onclick;
+
+
+    network.appendChild(
+        clone
+    );
+
+
+    showStage(
+        "📋",
+        "Pacote duplicado",
+        "Um segundo pacote foi colocado na rede para observar o comportamento de duplicação."
+    );
+
+}
+
+
+/* =========================================================
+   ACK MANUAL
+========================================================= */
+
+function sendACKManually() {
+
+
+    if (protocol !== "TCP") {
+
+        showStage(
+            "🟠",
+            "UDP não utiliza ACK do TCP",
+            "O UDP não possui o mecanismo de confirmação automática utilizado pelo TCP."
+        );
+
+        return;
+    }
+
+
+    showStage(
+        "✔️",
+        "ACK enviado manualmente",
+        "O ACK representa uma confirmação de recebimento."
+    );
+
+
+    updateNetworkStatus(
+        "✔️ ACK enviado",
+        "success"
+    );
+
+
+    updateControlInfo(
+        "✔️ ACK manual enviado.<br><br>" +
+        "No TCP real, ACKs fazem parte do mecanismo de confirmação."
+    );
+
+}
+
+
+/* =========================================================
+   HANDSHAKE TCP
+========================================================= */
+
+function startTCP() {
+
+
+    if (simulationRunning) {
+
+        showStage(
+            "⏳",
+            "Simulação em andamento",
+            "Aguarde o experimento terminar."
+        );
+
+        return;
+    }
+
+
+    protocol = "TCP";
+
+    setProtocol("TCP");
+
+
+    simulationRunning = true;
+
+
+    resetTimeline();
+
+    resetLayers();
+
+    clearPacket();
+
+
+    updateNetworkStatus(
+        "🤝 TCP — estabelecendo conexão",
+        "tcp"
+    );
+
+
+    showStage(
+        "🤝",
+        "TCP — SYN",
+        "Computador A solicita a abertura de uma conexão."
+    );
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "🤝",
+            "TCP — SYN/ACK",
+            "O servidor recebeu a solicitação e respondeu."
+        );
+
+
+    }, 5000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "✔️",
+            "TCP — ACK",
+            "Computador A confirma a resposta do servidor."
+        );
+
+
+    }, 10000);
+
+
+    setTimeout(() => {
+
+
+        showStage(
+            "🔵",
+            "Conexão TCP estabelecida",
+            "Agora os dados podem ser transmitidos pela conexão."
+        );
+
+
+        updateControlInfo(
+            "🤝 <b>Handshake concluído.</b><br><br>" +
+            "Agora experimente clicar em " +
+            "\"Enviar dados\"."
+        );
+
+
+        updateNetworkStatus(
+            "🔵 TCP — conexão estabelecida",
+            "tcp"
+        );
+
+
+        simulationRunning = false;
+
+
+    }, 15000);
+
+}
+
+
+/* =========================================================
+   MODO AUTOMÁTICO
+========================================================= */
+
+function toggleAuto() {
+
+
+    autoMode =
+        !autoMode;
+
+
+    const button =
+        document.getElementById(
+            "autoButton"
+        );
+
+
+    if (autoMode) {
+
+        button.textContent =
+            "⏸ Modo automático";
+
+        updateControlInfo(
+            "▶ <b>Modo automático ativado.</b><br><br>" +
+            "A demonstração será executada em sequência."
+        );
+
+
+        if (!simulationRunning) {
+
+            sendMessage();
+
+        }
+
+    } else {
+
+        button.textContent =
+            "▶ Modo automático";
+
+
+        updateControlInfo(
+            "⏸ Modo automático desativado."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PRÓXIMA ETAPA
+========================================================= */
+
+function stepSimulation() {
+
+
+    showStage(
+        "⏭",
+        "Próxima etapa",
+        "As etapas principais da simulação são espaçadas para permitir a observação."
+    );
+
+
+    updateControlInfo(
+        "⏭ Use este botão como apoio durante a explicação."
+    );
+
+}
+
+
+/* =========================================================
+   LIMPAR PACOTE
+========================================================= */
+
+function clearPacket() {
+
+
+    document
+        .querySelectorAll(
+            ".network .packet"
+        )
+        .forEach(
+            packet => packet.remove()
+        );
+
+
+    lastPacket = null;
+
+}
+
+
+/* =========================================================
+   REMOVER ESTADO DE PERDA
+========================================================= */
+
+function removeLossButtonState() {
+
+
+    document
+        .getElementById(
+            "lossButtonTop"
+        )
+        .classList.remove(
+            "armed"
+        );
+
+
+    document
+        .getElementById(
+            "lossButtonSide"
+        )
+        .classList.remove(
+            "armed"
+        );
+
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetSimulation() {
+
+
+    simulationRunning = false;
+
+    lossArmed = false;
+
+    autoMode = false;
+
+    currentStage = 0;
+
+
+    removeLossButtonState();
+
+    clearPacket();
+
+    resetTimeline();
+
+    resetLayers();
+
+
+    document
+        .getElementById(
+            "autoButton"
+        )
+        .textContent =
+        "▶ Modo automático";
+
+
+    updateNetworkStatus(
+        "● Aguardando transmissão",
+        ""
+    );
+
+
+    updateControlInfo(
+
+        "Laboratório reiniciado.<br><br>" +
+
+        "Escolha TCP ou UDP, " +
+
+        "arme uma perda se desejar " +
+
+        "e envie uma mensagem."
+
+    );
+
+
+    showStage(
+        "📡",
+        "Laboratório pronto",
+        "Escolha um protocolo e envie uma mensagem."
+    );
+
+
+    inspector.innerHTML = `
+
+        <div class="empty">
+
+            Clique em um pacote durante a
+            simulação para examinar seus
+            cabeçalhos.
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function closeModal() {
+
+    document
+        .getElementById("modal")
+        .classList.remove("show");
+
+}
+
+
+/* fechar clicando fora */
+
+document
+    .getElementById("modal")
+    .addEventListener(
+        "click",
+        function(e) {
+
+            if (
+                e.target === this
+            ) {
+
+                closeModal();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+setProtocol("TCP");
+
+showStage(
+    "📡",
+    "Laboratório pronto",
+    "Escolha TCP ou UDP e envie uma mensagem."
+);
+
+</script>
+
+</body>
+
+</html>
